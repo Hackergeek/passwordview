@@ -7,7 +7,7 @@ Support for password visibility is now included in the
 
 :eyes: "All eyes, yeah I see 'em" — [Yo Gotti, Down in the DM](https://genius.com/Yo-gotti-down-in-the-dm-lyrics)
 
-`compile 'com.xwray:passwordview:1.0'`
+`implementation 'com.xwray:passwordview:1.0'`
 
 ### Drop-in Android password view for the new material design spec
     <com.xwray.passwordview.PasswordView

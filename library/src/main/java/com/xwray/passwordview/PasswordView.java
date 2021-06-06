@@ -5,26 +5,29 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.AttrRes;
-import android.support.annotation.ColorInt;
-import android.support.annotation.DrawableRes;
-import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.AppCompatEditText;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 
+import androidx.annotation.AttrRes;
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+
+import com.google.android.material.textfield.TextInputEditText;
+
 /**
  * An EditText implementing the material design guidelines for password input:
  * https://www.google.com/design/spec/components/text-fields.html#text-fields-password-input
- *
+ * <p>
  * It uses the right drawable for the visibility indicator.  If you try to use it yourself, you
  * will have a bad time.
  */
-public class PasswordView extends AppCompatEditText {
+public class PasswordView extends TextInputEditText {
 
     private final static float ALPHA_ENABLED_DARK = .54f;
     private final static float ALPHA_DISABLED_DARK = .38f;
@@ -111,13 +114,20 @@ public class PasswordView extends AppCompatEditText {
         int end = getSelectionEnd();
         setInputType(InputType.TYPE_CLASS_TEXT | (visible ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD : InputType.TYPE_TEXT_VARIATION_PASSWORD));
         setSelection(start, end);
+        if (!useStrikeThrough){
+            return;
+        }
         Drawable drawable = useStrikeThrough && !visible ? eyeWithStrike : eye;
         Drawable[] drawables = getCompoundDrawables();
         setCompoundDrawablesWithIntrinsicBounds(drawables[0], drawables[1], drawable, drawables[3]);
         eye.setAlpha(visible && !useStrikeThrough ? alphaEnabled : alphaDisabled);
     }
 
-    @Override public boolean onTouchEvent(MotionEvent event) {
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!useStrikeThrough) {
+            return super.onTouchEvent(event);
+        }
         int drawableRightX = getWidth() - getPaddingRight();
         int drawableLeftX = drawableRightX - getCompoundDrawables()[2].getBounds().width();
         boolean eyeClicked = event.getX() >= drawableLeftX && event.getX() <= drawableRightX;
@@ -142,22 +152,27 @@ public class PasswordView extends AppCompatEditText {
         return super.onTouchEvent(event);
     }
 
-    @Override public void setInputType(int type) {
+    @Override
+    public void setInputType(int type) {
         this.typeface = getTypeface();
         super.setInputType(type);
         setTypeface(typeface);
     }
 
-    @Override public void setError(CharSequence error) {
+    @Override
+    public void setError(CharSequence error) {
         throw new RuntimeException("Please use TextInputLayout.setError() instead!");
     }
 
-    @Override public void setError(CharSequence error, Drawable icon) {
+    @Override
+    public void setError(CharSequence error, Drawable icon) {
         throw new RuntimeException("Please use TextInputLayout.setError() instead!");
     }
 
     public void setUseStrikeThrough(boolean useStrikeThrough) {
         this.useStrikeThrough = useStrikeThrough;
+        setup();
+        invalidate();
     }
 
     private static boolean isDark(float[] hsl) {
@@ -166,7 +181,7 @@ public class PasswordView extends AppCompatEditText {
 
     public static boolean isDark(@ColorInt int color) {
         float[] hsl = new float[3];
-        android.support.v4.graphics.ColorUtils.colorToHSL(color, hsl);
+        ColorUtils.colorToHSL(color, hsl);
         return isDark(hsl);
     }
 }
